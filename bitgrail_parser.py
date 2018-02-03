@@ -15,9 +15,6 @@
 # for UBUNTU install chromium, for windows chrome
 # also need to download the chromedriver https://sites.google.com/a/chromium.org/chromedriver/
 # On UBUNTU place this in /usr/local/bin/ for WINDOWS place in c:\Windows\
-# on WINDOWS download https://bootstrap.pypa.io/get-pip.py into the folder you installed Python27 (probably C:/Python27/)
-# and then open a cmd window, navigate to that folder, and run 'python.exe get-pip.py' then do 'Scripts\pip.exe install requests'
-# on ubuntu 'apt-get install python-pip' and 'pip install requests'
 
 # RUN by typing in cmd/terminal: python bitgrail_parsery.py
 
