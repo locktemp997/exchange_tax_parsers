@@ -13,8 +13,7 @@
 # also need to download the chromedriver https://sites.google.com/a/chromium.org/chromedriver/
 # On UBUNTU place this in /usr/local/bin/ for WINDOWS place in c:\Windows\
 # on WINDOWS download https://bootstrap.pypa.io/get-pip.py into the folder you installed Python27 (probably C:/Python27/)
-# and then open a cmd window, navigate to that folder, and run 'python.exe get-pip.py' then do 'Scripts\pip.exe install requests'
-# on ubuntu 'apt-get install python-pip' and 'pip install requests'
+# might need to use pip to install missing modules (e.g. re, selenium) but they may already be included by default in your python
 
 # RUN by typing in cmd/terminal: python kucoin_parser.py
 
