@@ -16,6 +16,9 @@
 # and then open a cmd window, navigate to that folder, and run 'python.exe get-pip.py' then do 'Scripts\pip.exe install requests'
 # on ubuntu 'apt-get install python-pip' and 'pip install requests'
 
+# RUN by typing in cmd/terminal: python kucoin_parser.py
+
+
 import csv
 import time
 import re
