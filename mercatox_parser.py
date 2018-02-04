@@ -10,10 +10,12 @@
 
 import csv
 z=[]
-timezone = raw_input("Please enter timezone in UTC (e.g. for PST enter: -8)")
-timezone = float(timezone)
-timezone = '%0.2i'%timezone + '00'
+#turns out mercatox reports timestamps in utc 0
+#timezone = raw_input("Please enter timezone in UTC (e.g. for PST enter: -8)")
+#timezone = float(timezone)
+#timezone = '%0.2i'%timezone + '00'
 
+timezone = '0000'
 
 def month_string_to_number(string):
     m = {
