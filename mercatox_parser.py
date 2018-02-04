@@ -21,8 +21,6 @@ z=[]
 #timezone = float(timezone)
 #timezone = '%0.2i'%timezone + '00'
 
-timezone = '0000'
-
 def month_string_to_number(string):
     m = {
         'jan': 1,
@@ -86,7 +84,7 @@ with open('trade.csv','rb') as csvfile:
             hour = str(int(hour)+12)
 
         #new date
-        date = year+'-'+month+'-'+day+' '+hour+':'+minsec+' '+timezone
+        date = year+'-'+month+'-'+day+' '+hour+':'+minsec
         if action == 'BUY':
             fee = str(float(amount)*float(price)*0.0025)
         else:
