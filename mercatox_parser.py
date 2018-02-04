@@ -8,6 +8,12 @@
 #Tested on ubuntu but should work on Windows too.
 #Output: mercatoxtrades_bitcointaxformat.csv
 
+
+# INSTALL:
+# python 2.7 https://www.python.org/download/releases/2.7/ (or apt-get python in ubuntu)
+
+# RUN by typing in cmd/terminal: python mercatox_parsery.py
+
 import csv
 z=[]
 #turns out mercatox reports timestamps in utc 0

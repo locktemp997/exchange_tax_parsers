@@ -3,12 +3,21 @@
 #Python script to scrape kucoin order history and format csv's for use to import trades to bitcoin.tax website
 
 #README:
-#Python 2.7
-#Requires chrome/chromium and chromedriver 
-#chromedriver can be obtained here https://sites.google.com/a/chromium.org/chromedriver/
 #Tested on ubuntu but should work on Windows too.
 
 #outputs: kucointrades_bitcointaxformat.csv
+
+# INSTALL INSTRUCTIONS:
+# python 2.7 https://www.python.org/download/releases/2.7/ (or apt-get python in ubuntu)
+# for UBUNTU install chromium, for windows chrome
+# also need to download the chromedriver https://sites.google.com/a/chromium.org/chromedriver/
+# On UBUNTU place this in /usr/local/bin/ for WINDOWS place in c:\Windows\
+# on WINDOWS download https://bootstrap.pypa.io/get-pip.py into the folder you installed Python27 (probably C:/Python27/)
+# might need to use pip to install missing modules (e.g. re, selenium) but they may already be included by default in your python
+
+# RUN by typing in cmd/terminal: python kucoin_parser.py
+
+
 import csv
 import time
 import re
