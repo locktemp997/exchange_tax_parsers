@@ -4,79 +4,112 @@
 
 #README:
 #Tested on ubuntu but should work on Windows too.
+#requires a kucoin api key to use, user will be asked for the key/secret upon running script
 
 #outputs: kucointrades_bitcointaxformat.csv
 
 # INSTALL INSTRUCTIONS:
 # python 2.7 https://www.python.org/download/releases/2.7/ (or apt-get python in ubuntu)
-# for UBUNTU install chromium, for windows chrome
-# also need to download the chromedriver https://sites.google.com/a/chromium.org/chromedriver/
-# On UBUNTU place this in /usr/local/bin/ for WINDOWS place in c:\Windows\
 # on WINDOWS download https://bootstrap.pypa.io/get-pip.py into the folder you installed Python27 (probably C:/Python27/)
-# might need to use pip to install missing modules (e.g. re, selenium) but they may already be included by default in your python
+# might need to use pip to install missing modules but they may already be included by default in your python
 
 # RUN by typing in cmd/terminal: python kucoin_parser.py
 
-
-import csv
+import hashlib
+import hmac
 import time
-import re
-from selenium import webdriver
+import requests
+import json
+import base64
+import sys
+import csv
+
+
+
+url = 'https://api.kucoin.com/v1/order/dealt'
+
+print "To run this parser, you need to setup an API key/secret pair on Kucoin's website"
+print "To do this, go to your account settings -> API Keys -> Create"
+print "This key will ONLY be used to grab dealt orders, and you should delete/deactivate the key pair from kucoins website after running this script"
+
+
+
+
+mykey = raw_input("Enter the API Key now \n")
+if len(mykey) > 10:
+    mysecret = raw_input("Enter the API Secret now \n")
+    if len(mysecret) < 10:
+        print "Secret might be too short, are you sure it's correct? Results may be garbage"
+else:
+    print "Key might be too sure , are you sure it's correct? Results may be garbage"
+
+
 timezone = raw_input("Please enter timezone in UTC (e.g. for PST enter: -8)")
-timezone = float(timezone)
-timezone = '%0.2i'%timezone + '00'
+timezone_v = float(timezone)
+timezone = '%0.2i'%timezone_v + '00'
 
-driver = webdriver.Chrome()
-
-driver.get("https://kucoin.com")
-
-raw_input('Press enter once logged in successfully')
-
-driver.set_page_load_timeout(5)
-try:
-    driver.get("https://www.kucoin.com/#/user/account/deal-orders")
-except:
-    pass
-
-time.sleep(3)
-#driver.implicitly_wait(10)
-
-#If missing some trades, maybe page isnt loading fast enough, could sleep here
-#time.sleep(10)
-
-tmp=driver.find_element_by_class_name("ant-pagination")
-numPages = int(tmp.text[-1])
+pagenum = 1
 z2 = []
-for nn in range(1,numPages+1):
-    x=driver.find_element_by_class_name("ant-table-tbody")
-    x = x.text
-    lines = x.splitlines()
-    for i in range(0,len(lines)):
-        date = lines[i][lines[i].find('20'):lines[i].find('20')+19]
-        date = date + ' ' + timezone
-        tradepair = lines[i][0:lines[i].find('20')-1]
-        coin1 = tradepair[0:tradepair.find('/')-1]
-        coin2 = tradepair[tradepair.find('/')+2:]
-        if lines[i].find('Sell') > -1:
-            action = 'SELL'
-            tmp2 = lines[i][lines[i].find('Sell')+5:]
-            tmp2 = tmp2.split()        
-        else:
-            action = 'BUY'
-            tmp2 = lines[i][lines[i].find('Buy')+4:]
-            tmp2 = tmp2.split()              
-        
-        price = float(re.findall(r'([\d.]+)', tmp2[0])[0])
-        amount_first = float(re.findall(r'([\d.]+)', tmp2[1])[0])
-        amount_second = float(re.findall(r'([\d.]+)', tmp2[2])[0])
-        z2.insert(0,[date,'Kucoin',action,coin1,'%f'%amount_first,coin2,'%f'%price])
-        
-    if nn < numPages:
-        y=driver.find_element_by_class_name("ant-pagination-next")
-        y.click()
-        time.sleep(3)
+while True:
+    print "Grabbing trades from page %i" % pagenum
+    nonce = int(time.time() * 1000)
+    
+    path = '/v1/order/dealt'
+    #limit = 72
+    
+    #query_str = 'limit=%i&page=%i'%(limit,page)
+    query_str = 'page=%i'%(pagenum)
+    sig_str = ("{}/{}/{}".format(path, nonce, query_str)).encode('utf-8')
+    m = hmac.new(mysecret.encode('utf-8'),base64.b64encode(sig_str),hashlib.sha256)
+    
+    payload={}
+    headers = {'KC-API-KEY':mykey,'KC-API-SIGNATURE':'0','KC-API-NONCE':str(nonce)}
+    #params = {'limit':str(limit),'page':str(page)}
+    params = {'page':str(pagenum)}
+    headers['KC-API-SIGNATURE'] = m.hexdigest()
 
-z2.insert(0,['Date','Source','Action','Symbol','Volume','Currency','Price','Fee'])
+    try:
+        response = requests.request('GET',url,params=params,data=payload,headers=headers,timeout=10.0)
+    except:
+        print "timed out, try runnning again"
+        sys.exit()
+    
+    j = response.json()
+    
+    if j['success'] != True:
+        print "failure in getting api data"
+        print j['msg']
+        sys.exit()
+    else:
+        j=j['data']['datas']
+        if j == []:
+            #found end, quit
+            break
+        
+        for k in j:
+            amount = k['amount']
+            coinType = k['coinType']
+            coinTypePair = k['coinTypePair']
+            datestamp = time.strftime('%Y-%m-%d %H:%M:%S',time.gmtime( (k['createdAt']/1000.0) + timezone_v*60*60) )
+            datestamp = datestamp + ' ' + timezone
+            action = k['direction']
+            price = k['dealPrice']
+            dealValue = k['dealValue']
+            fee = k['fee']
+            #kucoin always does the fee on the coin that you ended up with after the trade
+            if action == 'BUY':
+                #fee currency is in first coin
+                feecoin = coinType
+            else:
+                feecoin = coinTypePair
+            z2.insert(0,[datestamp,'Kucoin',action,coinType,'%f'%amount,coinTypePair,'%f'%price,'%f'%fee,feecoin])
+    
+    pagenum = pagenum + 1
+            
+
+        
+z2.insert(0,['Date','Source','Action','Symbol','Volume','Currency','Price','Fee','FeeCurrency'])
+
 with open("kucointrades_bitcointaxformat.csv","wb") as f:
     writer = csv.writer(f)
     writer.writerows(z2)    
