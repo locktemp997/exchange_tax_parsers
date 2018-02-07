@@ -3,7 +3,7 @@
 #Python script to scrape kucoin order history and format csv's for use to import trades to bitcoin.tax website
 
 #README:
-#Tested on ubuntu but should work on Windows too.
+#Tested on ubuntu with python 2.7 and python 3.5 but should work on Windows too.
 #requires a kucoin api key to use, user will be asked for the key/secret upon running script
 
 #outputs: kucointrades_bitcointaxformat.csv
@@ -23,35 +23,36 @@ import json
 import base64
 import sys
 import csv
+from builtins import input
 
 
 
 url = 'https://api.kucoin.com/v1/order/dealt'
 
-print "To run this parser, you need to setup an API key/secret pair on Kucoin's website"
-print "To do this, go to your account settings -> API Keys -> Create"
-print "This key will ONLY be used to grab dealt orders, and you should delete/deactivate the key pair from kucoins website after running this script"
+print("To run this parser, you need to setup an API key/secret pair on Kucoin's website")
+print("To do this, go to your account settings -> API Keys -> Create")
+print("This key will ONLY be used to grab dealt orders, and you should delete/deactivate the key pair from kucoins website after running this script")
 
 
 
 
-mykey = raw_input("Enter the API Key now \n")
+mykey = input("Enter the API Key now \n")
 if len(mykey) > 10:
-    mysecret = raw_input("Enter the API Secret now \n")
+    mysecret = input("Enter the API Secret now \n")
     if len(mysecret) < 10:
-        print "Secret might be too short, are you sure it's correct? Results may be garbage"
+        print("Secret might be too short, are you sure it's correct? Results may be garbage")
 else:
-    print "Key might be too sure , are you sure it's correct? Results may be garbage"
+    print("Key might be too sure , are you sure it's correct? Results may be garbage")
 
 
-timezone = raw_input("Please enter timezone in UTC (e.g. for PST enter: -8)")
+timezone = input("Please enter timezone in UTC (e.g. for PST enter: -8)")
 timezone_v = float(timezone)
 timezone = '%0.2i'%timezone_v + '00'
 
 pagenum = 1
 z2 = []
 while True:
-    print "Grabbing trades from page %i" % pagenum
+    print("Grabbing trades from page %i" % pagenum)
     nonce = int(time.time() * 1000)
     
     path = '/v1/order/dealt'
@@ -71,17 +72,17 @@ while True:
     try:
         response = requests.request('GET',url,params=params,data=payload,headers=headers,timeout=10.0)
     except:
-        print "timed out, try runnning again"
+        print("timed out, try runnning again")
         sys.exit()
     
-    j = response.json()
+    js = response.json()
     
-    if j['success'] != True:
-        print "failure in getting api data"
-        print j['msg']
+    if js['success'] != True:
+        print("failure in getting api data")
+        print(js['msg'])
         sys.exit()
     else:
-        j=j['data']['datas']
+        j=js['data']['datas']
         if j == []:
             #found end, quit
             break
@@ -103,13 +104,21 @@ while True:
             else:
                 feecoin = coinTypePair
             z2.insert(0,[datestamp,'Kucoin',action,coinType,'%f'%amount,coinTypePair,'%f'%price,'%f'%fee,feecoin])
-    
+        
+        if len(j) < js['data']['limit']:
+            #found end quit
+            break
     pagenum = pagenum + 1
             
 
         
 z2.insert(0,['Date','Source','Action','Symbol','Volume','Currency','Price','Fee','FeeCurrency'])
-
-with open("kucointrades_bitcointaxformat.csv","wb") as f:
-    writer = csv.writer(f)
-    writer.writerows(z2)    
+ 
+if (sys.version_info > (3, 0)):
+    with open("kucointrades_bitcointaxformat.csv","w", newline='') as f:
+        writer = csv.writer(f)
+        writer.writerows(z2)            
+else:
+    with open("kucointrades_bitcointaxformat.csv","wb") as f:
+        writer = csv.writer(f)
+        writer.writerows(z2)     
