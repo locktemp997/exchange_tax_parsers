@@ -115,7 +115,7 @@ if js['success'] == 1:
         fee = volume*price*fee_percent
         symbol = market[market.find('-')+1:]
         currency = market[0:market.find('-')]        
-        #On cointracking, fee should NOT be included in amounts already.
+        #On bitcointax, fee should NOT be included in amounts already.
         if action == 'buy':
             action = 'BUY'
         else:
