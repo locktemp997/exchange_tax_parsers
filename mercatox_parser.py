@@ -4,7 +4,7 @@
 
 #README:
 #Go to mercatox Transactions History and click "Download CSV", make sure its saved as trade.csv in same folder as this script.
-#Uses Python 2.7
+#Uses Python 2.7 or 3.5
 #Tested on ubuntu but should work on Windows too.
 #Output: mercatoxtrades_bitcointaxformat.csv
 
@@ -15,11 +15,9 @@
 # RUN by typing in cmd/terminal: python mercatox_parsery.py
 
 import csv
+import sys
 z=[]
 #turns out mercatox reports timestamps in utc 0
-#timezone = raw_input("Please enter timezone in UTC (e.g. for PST enter: -8)")
-#timezone = float(timezone)
-#timezone = '%0.2i'%timezone + '00'
 
 def month_string_to_number(string):
     m = {
@@ -44,7 +42,11 @@ def month_string_to_number(string):
     except:
         raise ValueError('Not a month')
 
-with open('trade.csv','rb') as csvfile:
+if (sys.version_info > (3, 0)):
+    opentype = 'r'
+else:
+    opentype = 'rb'
+with open('trade.csv',opentype) as csvfile:
     r = csv.reader(csvfile,delimiter=',')
     for row in r:
         if row[0] == 'txid':
@@ -65,7 +67,7 @@ with open('trade.csv','rb') as csvfile:
         elif action == 'sell':
             action = 'SELL'
         else:
-            print "WTF"
+            print("WTF")
             break
         timestamp = row[6]
         
@@ -94,6 +96,11 @@ with open('trade.csv','rb') as csvfile:
 
 z.insert(0,['Date','Source','Action','Symbol','Volume','Currency','Price','Fee'])
 
-with open("mercatoxtrades_bitcointaxformat.csv","wb") as f:
-    writer = csv.writer(f)
-    writer.writerows(z)
+if (sys.version_info > (3, 0)):
+    with open("mercatoxtrades_bitcointaxformat.csv","w", newline='') as f:
+        writer = csv.writer(f)
+        writer.writerows(z)            
+else:
+    with open("mercatoxtrades_bitcointaxformat.csv","wb") as f:
+        writer = csv.writer(f)
+        writer.writerows(z)  
