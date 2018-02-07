@@ -20,6 +20,7 @@ import requests
 import hmac
 import hashlib
 import os
+import sys
 from builtins import input
 
 url = 'https://api.bitgrail.com/v1/lasttrades'
@@ -46,7 +47,7 @@ n=nonce()
 payload = {'nonce':n}
 headers = {'KEY':mykey,'SIGNATURE':'0'}
 
-signature = hmac.new(mysecret, 'nonce=%i' % n, digestmod=hashlib.sha512)
+signature = hmac.new(mysecret.encode('utf-8'), ('nonce=%i' % n).encode('utf-8'), digestmod=hashlib.sha512)
 
 headers['SIGNATURE'] = signature.hexdigest()
 
@@ -87,7 +88,7 @@ if js['success'] == 1:
         
         
     z.insert(0,["Type","Buy","Cur.","Sell","Cur.","Fee","Cur.","Exchange","Group","Comment","Date"])
-    if os.name == 'nt' and (sys.version_info > (3, 0)):
+    if (sys.version_info > (3, 0)):
         with open("bitgrailtrades_cointrackingformat.csv","w", newline='') as f:
             writer = csv.writer(f)
             writer.writerows(z)            
@@ -125,7 +126,7 @@ if js['success'] == 1:
 
     z2.insert(0,['Date','Source','Action','Symbol','Volume','Currency','Price','Fee'])
 
-    if os.name == 'nt' and (sys.version_info > (3, 0)):
+    if (sys.version_info > (3, 0)):
         with open("bitgrailtrades_bitcointaxformat.csv","w", newline='') as f:
             writer = csv.writer(f)
             writer.writerows(z2)            
