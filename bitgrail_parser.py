@@ -19,6 +19,7 @@ import time
 import requests
 import hmac
 import hashlib
+import os
 from builtins import input
 
 url = 'https://api.bitgrail.com/v1/lasttrades'
@@ -86,9 +87,14 @@ if js['success'] == 1:
         
         
     z.insert(0,["Type","Buy","Cur.","Sell","Cur.","Fee","Cur.","Exchange","Group","Comment","Date"])
-    with open("bitgrailtrades_cointrackingformat.csv","w") as f:
-        writer = csv.writer(f)
-        writer.writerows(z)         
+    if os.name == 'nt' and (sys.version_info > (3, 0)):
+        with open("bitgrailtrades_cointrackingformat.csv","w", newline='') as f:
+            writer = csv.writer(f)
+            writer.writerows(z)            
+    else:
+        with open("bitgrailtrades_cointrackingformat.csv","wb") as f:
+            writer = csv.writer(f)
+            writer.writerows(z)         
 else:
     print("Failed to grab trades, check your keys and internet connection")
     
@@ -119,10 +125,14 @@ if js['success'] == 1:
 
     z2.insert(0,['Date','Source','Action','Symbol','Volume','Currency','Price','Fee'])
 
-
-    with open("bitgrailtrades_bitcointaxformat.csv","w") as f:
-        writer = csv.writer(f)
-        writer.writerows(z2)
+    if os.name == 'nt' and (sys.version_info > (3, 0)):
+        with open("bitgrailtrades_bitcointaxformat.csv","w", newline='') as f:
+            writer = csv.writer(f)
+            writer.writerows(z2)            
+    else:
+        with open("bitgrailtrades_bitcointaxformat.csv","wb") as f:
+            writer = csv.writer(f)
+            writer.writerows(z2)      
      
 else:
     print("Failed to grab trades, check your keys and internet connection")
