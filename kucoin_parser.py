@@ -18,6 +18,10 @@
 
 # RUN by typing in cmd/terminal: python kucoin_parser.py
 
+# PROBLEMS:
+# If you get an error about invalid nonce, please make sure your system time is synchronized and accurate! Kucoin checks that the 
+# nonce conforms to your system time I guess?
+
 import hashlib
 import hmac
 import time
