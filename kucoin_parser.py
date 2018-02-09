@@ -13,7 +13,14 @@
 # on WINDOWS download https://bootstrap.pypa.io/get-pip.py into the folder you installed Python27 (probably C:/Python27/)
 # might need to use pip to install missing modules but they may already be included by default in your python
 
+# IF you get an error about "no module named builtins" when trying to run the script, you need to do:
+# pip install future  (or on windows pip.exe install future)
+
 # RUN by typing in cmd/terminal: python kucoin_parser.py
+
+# PROBLEMS:
+# If you get an error about invalid nonce, please make sure your system time is synchronized and accurate! Kucoin checks that the 
+# nonce conforms to your system time I guess?
 
 import hashlib
 import hmac
