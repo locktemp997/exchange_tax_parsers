@@ -50,10 +50,41 @@ timezone_v = float(timezone)
 timezone = '%0.2i'%timezone_v + '00'
 
 pagenum = 1
+
+#First do an API req and make sure nonce works - sometimes on machines that have inaccurate time, kucoin get's upset and declares the nonce to be invalid
+#We use their return timestamp on the response to correct the difference if that's the case
+
+nonce = int(time.time() * 1000)
+path = '/v1/order/dealt'
+query_str = 'page=%i'%(pagenum)
+sig_str = ("{}/{}/{}".format(path, nonce, query_str)).encode('utf-8')
+m = hmac.new(mysecret.encode('utf-8'),base64.b64encode(sig_str),hashlib.sha256)
+payload={}
+headers = {'KC-API-KEY':mykey,'KC-API-SIGNATURE':'0','KC-API-NONCE':str(nonce)}
+params = {'page':str(pagenum)}
+headers['KC-API-SIGNATURE'] = m.hexdigest()
+
+try:
+    response = requests.request('GET',url,params=params,data=payload,headers=headers,timeout=10.0)
+except:
+    print("timed out, try runnning again")
+    sys.exit()
+
+j1 = response.json()
+if j1['msg'] == 'Invalid nonce':
+    #Need to correct time offset
+    print("Correcting time offset with Kucoin API, make sure resulting CSV datestamp looks correct")
+    time_offset = j1['timestamp'] - nonce
+else:
+    time_offset = 0
+
+
+
+
 z2 = []
 while True:
     print("Grabbing trades from page %i" % pagenum)
-    nonce = int(time.time() * 1000)
+    nonce = int(time.time() * 1000 + time_offset)
     
     path = '/v1/order/dealt'
     #limit = 72
